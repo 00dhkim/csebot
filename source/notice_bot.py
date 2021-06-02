@@ -203,7 +203,7 @@ def clean_up(conn, cur):
 
 
 if __name__ == "__main__":
-    TOKEN = '***REMOVED***'
+    TOKEN = ''
     # telegram bot related information
     bot = telegram.Bot(token=TOKEN)
 	
