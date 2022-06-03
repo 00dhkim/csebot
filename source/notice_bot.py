@@ -14,6 +14,7 @@ from telegram.ext import CommandHandler
 import signal, os
 import os.path
 import logging
+import sys
 
 # Database Diagram
 # CREATE TABLE announce (
@@ -39,16 +40,21 @@ announcement_date = ""
 announcement_url = ""
 announcement_title = ""
 
+# directory and paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TOKEN = os.path.join(BASE_DIR, 'data', 'token.txt')
+USER = os.path.join(BASE_DIR, 'data', 'user.txt')
+DB = os.path.join(BASE_DIR, 'data', 'announcement.sqlite')
+
+
 
 # read token from file
 def get_token():
-	BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-	TOKEN = os.path.join(BASE_DIR, 'token.txt')
-	f = open(TOKEN, "r")
-	token = f.read()
-	token.rstrip()
-	f.close()
-	return token
+    f = open(TOKEN, "r")
+    token = f.read()
+    token.rstrip()
+    f.close()
+    return token
 
 
 def start(update, context):
@@ -61,16 +67,12 @@ def start(update, context):
 
 
 def add_user(user):
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    USER = os.path.join(BASE_DIR, 'user.txt')
     f = open(USER, "a+")
     f.write(str(user) + "\n")
     f.close()
 
 
 def leave(update, context):
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    USER = os.path.join(BASE_DIR, 'user.txt')
     user_id = update.effective_chat.id
     f = open(USER, "r")
     lines = f.readlines()
@@ -98,9 +100,6 @@ def get_announcement_feed(URL, conn, cur, selected):
     global announcement_title
     global announcement_type
     global bot
-
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    USER = os.path.join(BASE_DIR, 'user.txt')
 
     page = requests.get(URL)
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -139,6 +138,7 @@ def get_announcement_feed(URL, conn, cur, selected):
 
         print(announcement_url)
         print(announcement_title)
+        print()
 
         # Initializing DB
         if insert_announcement_record(conn, cur, announcement_title, announcement_url, announcement_writer, announcement_date, announcement_type):
@@ -169,10 +169,8 @@ def get_announcement_feed(URL, conn, cur, selected):
                 time.sleep(1)
 
 
-def connect_sqlite3(db_name):
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(BASE_DIR, db_name)
-    conn = sqlite3.connect(db_path)
+def connect_sqlite3():
+    conn = sqlite3.connect(DB)
     print("Opened database successfully")
     cur = conn.cursor()
     return conn, cur
@@ -197,19 +195,20 @@ def select_announcement_from_table(cur):
         return 0
 
 
-def clean_up(conn, cur):
+def clean_up(conn, cur, exit_code=0):
     cur.close()
     conn.close()
+    updater.stop()
+    sys.exit(0)
 
 
 if __name__ == "__main__":
-    TOKEN = ''
+    TOKEN = get_token()
     # telegram bot related information
     bot = telegram.Bot(token=TOKEN)
-	
 
     # Initializing the DB
-    conn, cur = connect_sqlite3("announcement.db")
+    conn, cur = connect_sqlite3()
 
     updater = Updater(token=TOKEN, use_context=True, request_kwargs={'read_timeout': 6, 'connect_timeout': 7})
     dispatcher = updater.dispatcher
@@ -222,14 +221,23 @@ if __name__ == "__main__":
     dispatcher.add_handler(leave_handler)
     updater.start_polling()
 
-    while True:
-        get_announcement_feed(URL_1, conn, cur, '전체 공지')
-        get_announcement_feed(URL_2, conn, cur, '학사 공지')
-        get_announcement_feed(URL_3, conn, cur, '심컴')
-        get_announcement_feed(URL_4, conn, cur, '글솝')
-        get_announcement_feed(URL_5, conn, cur, '대학원')
-        print("waiting for 1800 seconds")
-        time.sleep(1800)
-    clean_up(conn, cur)
-
-
+    try:
+        while True:
+            get_announcement_feed(URL_1, conn, cur, '전체 공지')
+            get_announcement_feed(URL_2, conn, cur, '학사 공지')
+            get_announcement_feed(URL_3, conn, cur, '심컴')
+            get_announcement_feed(URL_4, conn, cur, '글솝')
+            get_announcement_feed(URL_5, conn, cur, '대학원')
+            print("waiting for 1800 seconds")
+            time.sleep(1800)
+    
+    except KeyboardInterrupt:
+        print('\n\nKeyboardInterrupt, goodbye')
+        clean_up(conn, cur, exit_code=0)
+        
+        
+    
+    except Exception as e:
+        print('\n\nsystem exited', e)
+        clean_up(conn, cur, exit_code=1)
+    
