@@ -28,11 +28,15 @@ import sys
 # Execution Example
 # conn.execute("INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (1, 'Paul', 32, 'California', 20000.00 )");
 
-URL_1 = 'http://computer.knu.ac.kr/06_sub/02_sub.html'
-URL_2 = 'http://computer.knu.ac.kr/06_sub/02_sub_2.html'
-URL_3 = 'http://computer.knu.ac.kr/06_sub/02_sub_3.html'
-URL_4 = 'http://computer.knu.ac.kr/06_sub/02_sub_4.html'
-URL_5 = 'http://computer.knu.ac.kr/06_sub/02_sub_6.html'
+
+URLs = {
+    '전체 공지': 'http://computer.knu.ac.kr/06_sub/02_sub.html',
+    '학사 공지': 'http://computer.knu.ac.kr/06_sub/02_sub_2.html',
+    '심컴':      'http://computer.knu.ac.kr/06_sub/02_sub_3.html',
+    '글솝':      'http://computer.knu.ac.kr/06_sub/02_sub_4.html',
+    '대학원':    'http://computer.knu.ac.kr/06_sub/02_sub_6.html',
+}
+
 
 announcement_type = ""
 announcement_writer = ""
@@ -40,12 +44,12 @@ announcement_date = ""
 announcement_url = ""
 announcement_title = ""
 
+
 # directory and paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKEN = os.path.join(BASE_DIR, 'data', 'token.txt')
 USER = os.path.join(BASE_DIR, 'data', 'user.txt')
 DB = os.path.join(BASE_DIR, 'data', 'announcement.sqlite')
-
 
 
 # read token from file
@@ -195,6 +199,7 @@ def select_announcement_from_table(cur):
         return 0
 
 
+# clean up DB, updater and turn off notice_bot
 def clean_up(conn, cur, exit_code=0):
     cur.close()
     conn.close()
@@ -223,19 +228,14 @@ if __name__ == "__main__":
 
     try:
         while True:
-            get_announcement_feed(URL_1, conn, cur, '전체 공지')
-            get_announcement_feed(URL_2, conn, cur, '학사 공지')
-            get_announcement_feed(URL_3, conn, cur, '심컴')
-            get_announcement_feed(URL_4, conn, cur, '글솝')
-            get_announcement_feed(URL_5, conn, cur, '대학원')
+            for title, URL in URLs.items():
+                get_announcement_feed(URL, conn, cur, title)
             print("waiting for 1800 seconds")
             time.sleep(1800)
     
     except KeyboardInterrupt:
         print('\n\nKeyboardInterrupt, goodbye')
         clean_up(conn, cur, exit_code=0)
-        
-        
     
     except Exception as e:
         print('\n\nsystem exited', e)
