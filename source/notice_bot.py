@@ -228,8 +228,8 @@ if __name__ == "__main__":
 
     try:
         while True:
-            for title, URL in URLs.items():
-                get_announcement_feed(URL, conn, cur, title)
+            for title, url in URLs.items():
+                get_announcement_feed(url, conn, cur, title)
             print("waiting for 1800 seconds")
             time.sleep(1800)
     
