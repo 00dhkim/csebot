@@ -29,20 +29,15 @@ import sys
 # conn.execute("INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (1, 'Paul', 32, 'California', 20000.00 )");
 
 
+# target url and title
 URLs = {
     '전체 공지': 'http://computer.knu.ac.kr/06_sub/02_sub.html',
     '학사 공지': 'http://computer.knu.ac.kr/06_sub/02_sub_2.html',
     '심컴':      'http://computer.knu.ac.kr/06_sub/02_sub_3.html',
     '글솝':      'http://computer.knu.ac.kr/06_sub/02_sub_4.html',
     '대학원':    'http://computer.knu.ac.kr/06_sub/02_sub_6.html',
+    '학생회':    'http://computer.knu.ac.kr/06_sub/06_sub.html',
 }
-
-
-announcement_type = ""
-announcement_writer = ""
-announcement_date = ""
-announcement_url = ""
-announcement_title = ""
 
 
 # directory and paths
@@ -50,6 +45,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKEN = os.path.join(BASE_DIR, 'data', 'token.txt')
 USER = os.path.join(BASE_DIR, 'data', 'user.txt')
 DB = os.path.join(BASE_DIR, 'data', 'announcement.sqlite')
+
+
+
+announcement_type = ""
+announcement_writer = ""
+announcement_date = ""
+announcement_url = ""
+announcement_title = ""
 
 
 # read token from file
