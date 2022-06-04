@@ -99,12 +99,11 @@ def RepresentsInt(s):
         return 0
 
 
-def get_announcement_feed(URL, conn, cur, selected):
+def get_announcement_feed(URL, conn, cur, category):
     global announcement_title
     global announcement_writer
     global announcement_date
     global announcement_url
-    global announcement_title
     global announcement_type
     global bot
 
@@ -149,7 +148,7 @@ def get_announcement_feed(URL, conn, cur, selected):
 
         # Initializing DB
         if insert_announcement_record(conn, cur, announcement_title, announcement_url, announcement_writer, announcement_date, announcement_type):
-            message_query = selected + ": \n" + "제목: " + announcement_title + "\n작성자: " + announcement_writer + "\n링크: " + announcement_url + "\n날짜: " + announcement_date
+            message_query = category + ": \n" + "제목: " + announcement_title + "\n작성자: " + announcement_writer + "\n링크: " + announcement_url + "\n날짜: " + announcement_date
 
             f = open(USER, "r")
             users = f.readlines()
@@ -231,8 +230,8 @@ if __name__ == "__main__":
 
     try:
         while True:
-            for title, url in URLs.items():
-                get_announcement_feed(url, conn, cur, title)
+            for category, url in URLs.items():
+                get_announcement_feed(url, conn, cur, category)
             print("waiting for 1800 seconds")
             time.sleep(1800)
     
